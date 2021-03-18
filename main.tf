@@ -1,5 +1,5 @@
 provider "azurerm" {
-  version = "=1.44.0"
+  features {}
 }
 
 resource "azurerm_resource_group" "myresourcegroup" {
@@ -22,7 +22,7 @@ resource "azurerm_subnet" "subnet" {
   name                 = "${var.prefix}-subnet"
   virtual_network_name = azurerm_virtual_network.vnet.name
   resource_group_name  = azurerm_resource_group.myresourcegroup.name
-  address_prefix       = var.subnet_prefix
+  address_prefixes     = [var.subnet_prefix]
 }
 
 resource "azurerm_network_security_group" "catapp-sg" {
@@ -71,7 +71,6 @@ resource "azurerm_network_interface" "catapp-nic" {
   name                      = "${var.prefix}-catapp-nic"
   location                  = var.location
   resource_group_name       = azurerm_resource_group.myresourcegroup.name
-  network_security_group_id = azurerm_network_security_group.catapp-sg.id
 
   ip_configuration {
     name                          = "${var.prefix}ipconfig"
@@ -79,6 +78,11 @@ resource "azurerm_network_interface" "catapp-nic" {
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.catapp-pip.id
   }
+}
+
+resource "azurerm_network_interface_security_group_association" "example" {
+  network_interface_id      = azurerm_network_interface.catapp-nic.id
+  network_security_group_id = azurerm_network_security_group.catapp-sg.id
 }
 
 resource "azurerm_public_ip" "catapp-pip" {
